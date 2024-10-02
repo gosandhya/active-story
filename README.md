@@ -1,4 +1,3 @@
----
 
 # Active Story 
 
@@ -17,7 +16,6 @@ The FastAPI backend provides the endpoints for generating stories. It's responsi
 To run the FastAPI backend locally, use the following command:
 
 ```bash
-export PYTHONPATH=src/main/python
 uvicorn active_story_service.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
@@ -65,8 +63,8 @@ This will start the frontend on `http://localhost:3000/`.
 1. **Clone the Repository**:
 
    ```bash
-   git clone https://github.com/your-username/storybook-generator.git
-   cd storybook-generator
+   git clone https://github.com/gosandhya/active-story.git
+   cd active-story
    ```
 
 2. **Backend Setup**:
