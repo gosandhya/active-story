@@ -1,0 +1,15 @@
+/* src/App.css */
+
+.app {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background-color: #e0f7fa;
+  color: #333;
+  padding: 20px;
+}
+
+h1 {
+  color: #00796b;
+  font-size: 36px;
+  margin-bottom: 20px;
+}
