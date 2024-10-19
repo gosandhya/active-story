@@ -7,6 +7,7 @@ const LandingPage = () => {
     const [theme, setTheme] = useState('');
     const [currentStoryId, setCurrentStoryId] = useState(null);
     const [popupStory, setPopupStory] = useState(null);
+    const [isLoading, setIsLoading] = useState(false); // Loading state
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -29,6 +30,8 @@ const LandingPage = () => {
             return;
         }
 
+        setIsLoading(true); // Start loading
+
         try {
             const response = await fetch('http://localhost:8000/generate-story/', {
                 method: 'POST',
@@ -45,16 +48,22 @@ const LandingPage = () => {
             navigate(`/story/${data.story_id}`);
         } catch (error) {
             console.error('Error generating story:', error);
+        } finally {
+            setIsLoading(false); // Stop loading
         }
     };
 
     const handleViewStory = async (storyId) => {
+        setIsLoading(true); // Start loading
+
         try {
             const response = await fetch(`http://localhost:8000/get-story/?story_id=${storyId}`);
             const data = await response.json();
             setPopupStory(data);
         } catch (error) {
             console.error('Error fetching story:', error);
+        } finally {
+            setIsLoading(false); // Stop loading
         }
     };
 
@@ -72,7 +81,13 @@ const LandingPage = () => {
                     value={theme}
                     onChange={(e) => setTheme(e.target.value)}
                 />
-                <button onClick={handleGenerateStory}>Generate Story</button>
+                <button onClick={handleGenerateStory} disabled={isLoading}>
+                    {isLoading ? (
+                        <span className="spinner"></span> // Spinner during loading
+                    ) : (
+                        "Generate Story"
+                    )}
+                </button>
             </div>
 
             <div className="saved-stories-section">
@@ -97,7 +112,7 @@ const LandingPage = () => {
                         <h2>{popupStory.theme}</h2>
                         <p>{popupStory.content}</p>
                         <div className="popup-footer">
-                        <button onClick={handleClosePopup}>Close</button>
+                            <button onClick={handleClosePopup}>Close</button>
                         </div>
                     </div>
                 </div>

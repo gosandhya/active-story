@@ -9,6 +9,8 @@ const StoryPage = () => {
     const [improvisation, setImprovisation] = useState('');
     const [improvisationsCount, setImprovisationsCount] = useState(0);
     const [maxImprovisations] = useState(3);
+    const [loadingImprov, setLoadingImprov] = useState(false); // Loading state for improvisation
+    const [loadingSave, setLoadingSave] = useState(false); // Loading state for saving
 
     useEffect(() => {
         const fetchStory = async () => {
@@ -35,6 +37,8 @@ const StoryPage = () => {
             return;
         }
 
+        setLoadingImprov(true); // Set loading to true when API call starts
+
         try {
             const response = await fetch('http://localhost:8000/continue-story/', {
                 method: 'POST',
@@ -52,10 +56,13 @@ const StoryPage = () => {
             setImprovisationsCount(improvisationsCount + 1);
         } catch (error) {
             console.error('Error adding improvisation:', error);
+        } finally {
+            setLoadingImprov(false); // Set loading to false when API call ends
         }
     };
 
     const handleSaveStory = async () => {
+        setLoadingSave(true); // Set loading to true when API call starts
         try {
             await fetch(`http://localhost:8000/update-story/${storyId}`, {
                 method: 'POST',
@@ -69,14 +76,26 @@ const StoryPage = () => {
             navigate('/');
         } catch (error) {
             console.error('Error saving story:', error);
+        } finally {
+            setLoadingSave(false); // Set loading to false when API call ends
         }
+    };
+
+    // Function to render story with line breaks
+    const renderStory = (storyContent) => {
+        return storyContent.split('\n').map((item, index) => (
+            <span key={index}>
+                {item}
+                <br /> {/* Add a line break for each new line */}
+            </span>
+        ));
     };
 
     return (
         <div className="story-page">
             <h2>Story Page</h2>
             <div className="story-content">
-                <p>{story}</p>
+                {renderStory(story)}
             </div>
             {improvisationsCount < maxImprovisations && (
                 <div className="improvisation-section">
@@ -86,10 +105,14 @@ const StoryPage = () => {
                         value={improvisation}
                         onChange={(e) => setImprovisation(e.target.value)}
                     />
-                    <button onClick={handleAddImprovisation}>Add Improvisation</button>
+                    <button onClick={handleAddImprovisation} disabled={loadingImprov}>
+                        {loadingImprov ? <span className="spinner"></span> : "Add Improvisation"}
+                    </button>
                 </div>
             )}
-            <button onClick={handleSaveStory}>Save Story</button>
+            <button onClick={handleSaveStory} disabled={loadingSave}>
+                {loadingSave ? <span className="spinner"></span> : "Save Story"}
+            </button>
         </div>
     );
 };

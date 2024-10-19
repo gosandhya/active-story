@@ -224,8 +224,6 @@ async def continue_story(input_data: ContinueStoryInput):
 
     Please proceed with your story planning and continuation based on the provided information."""
 
-            
-
     message = await client.messages.create(
         model="claude-3-haiku-20240307",
         max_tokens=1000,
@@ -252,17 +250,16 @@ async def continue_story(input_data: ContinueStoryInput):
         ]
     )
     response = message.content[0].text
-    print('response', response)
 
     new_content = None
 
     story_match = re.search(r'<story_continuation>(.*?)</story_continuation>', response, re.DOTALL)
-    print("story_match", story_match)
+
     if story_match:
         new_content = story_match.group(1).strip()  # Get the matched content and strip leading/trailing whitespace
     
-    print("new_content", new_content)
-    continued_story = f"{story['content']} {new_content}"  # Append the new part only
+
+    continued_story = f"{story['content']} \n\n\n {new_content}"  # Append the new part only
     new_cursor = len(continued_story)
 
     story['improvisations'].append(improv)

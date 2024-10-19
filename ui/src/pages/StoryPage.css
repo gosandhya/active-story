@@ -1,19 +1,25 @@
+/* Story Page Styling - Matches Landing Page Theme */
 .story-page {
     padding: 20px;
-    font-family: Arial, sans-serif;
+    font-family: 'Comic Neue', cursive; /* Consistent playful font */
+    background-color: var(--background-color); /* Use the same background */
+    color: #4A4A4A; /* Soft dark gray for readability */
 }
 
 h2 {
     text-align: center;
     margin-bottom: 20px;
+    color: var(--main-color); /* Coral for consistency */
+    font-weight: 700; /* Bold for emphasis */
 }
 
 .story-content {
     margin-bottom: 20px;
     padding: 20px;
-    background: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: #FFEBE8; /* Light coral to match theme */
+    border-radius: 12px; /* Softer rounded edges */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15); /* Soft shadow */
+    font-family: 'Comic Neue', cursive; /* Consistent font */
 }
 
 .improvisation-section {
@@ -22,36 +28,62 @@ h2 {
 }
 
 .improvisation-section input[type="text"] {
-    padding: 10px;
+    padding: 15px; /* Increased padding for comfort */
     margin: 10px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    width: 300px;
+    border-radius: 10px;
+    border: 2px solid var(--main-color); /* Coral border */
+    width: 100%; /* Full width for centering */
+    max-width: 400px; /* Max width for input */
+    font-family: 'Comic Neue', cursive;
+    background-color: #FFEBE8; /* Light coral background */
 }
 
 .improvisation-section button {
     margin: 10px;
     padding: 10px 20px;
-    background: #007BFF;
+    background: var(--accent-color); /* Aqua for buttons */
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 10px; /* Rounded for a fun look */
     cursor: pointer;
+    font-family: 'Comic Neue', cursive;
+    transition: background 0.3s;
+    width: 100%; /* Full width for centering */
+    max-width: 300px; /* Max width */
 }
 
 .improvisation-section button:hover {
-    background: #0056b3;
+    background: #4DD4C8; /* Darker aqua on hover */
 }
 
 button {
     padding: 10px 20px;
-    background: #28a745;
+    background: var(--accent-color); /* Aqua for buttons */
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 10px;
     cursor: pointer;
+    font-family: 'Comic Neue', cursive;
+    transition: background 0.3s;
 }
 
 button:hover {
-    background: #218838;
+    background: #4DD4C8; /* Darker aqua on hover */
+}
+
+/* Spinner for buttons */
+.spinner {
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 3px solid #fff; /* White spinner */
+    width: 15px;
+    height: 15px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    margin-right: 5px; /* Space between spinner and text */
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
