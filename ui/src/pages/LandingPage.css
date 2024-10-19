@@ -1,9 +1,32 @@
-.landing-page {
-    padding: 20px;
-    font-family: Arial, sans-serif;
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&display=swap');
+
+/* Color Palette */
+:root {
+    --main-color: #FF6B6B; /* Coral */
+    --accent-color: #6DD3CE; /* Aqua */
+    --background-color: #F7F2E7; /* Light Sand */
 }
 
-.generate-story-section,
+/* General Page Styling */
+body {
+    font-family: 'Comic Neue', cursive; /* Fun, playful font */
+    background-color: var(--background-color); /* Use the light sand background */
+}
+
+.landing-page {
+    padding: 20px;
+    font-family: 'Comic Neue', cursive; /* Consistent font */
+    color: #4A4A4A; /* Soft dark gray for readability */
+}
+
+.generate-story-section {
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
+    align-items: center; /* Center items horizontally */
+    margin-bottom: 40px;
+}
+
 .saved-stories-section {
     margin-bottom: 40px;
 }
@@ -11,34 +34,45 @@
 h2 {
     text-align: center;
     margin-bottom: 20px;
+    color: var(--main-color); /* Use coral for headings */
+    font-weight: 700; /* Make headings bold */
 }
 
 .generate-story-section input[type="text"] {
-    padding: 10px;
+    padding: 15px; /* Increased padding for a bigger text box */
     margin: 10px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    width: 300px;
+    border-radius: 10px; /* Softer, more rounded edges */
+    border: 2px solid var(--main-color); /* Coral border */
+    width: 100%; /* Full width for centering */
+    max-width: 400px; /* Increased maximum width for input box */
+    font-family: 'Comic Neue', cursive;
+    background-color: #FFEBE8; /* Light coral background */
+    box-sizing: border-box; /* Include padding and border in width */
 }
 
 .generate-story-section button {
     margin: 10px;
     padding: 10px 20px;
-    background: #007BFF;
+    background: var(--accent-color); /* Use aqua for buttons */
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 10px;
     cursor: pointer;
+    font-family: 'Comic Neue', cursive;
+    transition: background 0.3s;
+    width: 100%; /* Full width for centering */
+    max-width: 300px; /* Maximum width for button */
 }
 
 .generate-story-section button:hover {
-    background: #0056b3;
+    background: #4DD4C8; /* Slightly darker aqua on hover */
 }
 
 .improvisations-input {
     margin: 10px 0;
 }
 
+/* Saved Stories Styling */
 .stories-container {
     display: flex;
     flex-wrap: wrap;
@@ -47,30 +81,39 @@ h2 {
 }
 
 .story-card {
-    background: #f4f4f4;
-    border-radius: 8px;
+    background: #FFEBE8; /* Light coral */
+    border-radius: 12px;
     padding: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15); /* Softer shadow */
     width: 300px;
     box-sizing: border-box;
     cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.story-card:hover {
+    transform: scale(1.05); /* Slight hover effect */
 }
 
 .story-card h2 {
     margin-top: 0;
+    color: var(--main-color); /* Use coral for story card headings */
+    font-weight: 700;
 }
 
 .story-card p {
     margin: 10px 0;
+    color: #4A4A4A;
 }
 
+/* Popup Styling */
 .popup-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -79,25 +122,42 @@ h2 {
 .popup-content {
     background: white;
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 12px;
     width: 80%;
     max-width: 600px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    position: relative;
+    max-height: 80%;
+    overflow-y: auto;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    height: auto;
 }
 
-.popup-content button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
+.popup-content h2, 
+.popup-content p {
+    margin-bottom: 20px;
+    color: #4A4A4A;
+    font-family: 'Comic Neue', cursive;
+}
+
+.popup-footer {
+    display: flex;
+    justify-content: center;
+    margin-top: auto;
+}
+
+.popup-footer button {
     padding: 10px 20px;
-    background: #007BFF;
+    background: var(--accent-color); /* Use aqua for popup button */
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
+    font-family: 'Comic Neue', cursive;
+    transition: background 0.3s;
 }
 
-.popup-content button:hover {
-    background: #0056b3;
+.popup-footer button:hover {
+    background: #4DD4C8; /* Darker aqua on hover */
 }

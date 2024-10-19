@@ -76,7 +76,7 @@ const LandingPage = () => {
             </div>
 
             <div className="saved-stories-section">
-                <h2>Saved Stories</h2>
+                <h2>Your Stories</h2>
                 <div className="stories-container">
                     {stories.map((story) => (
                         <div
@@ -96,7 +96,9 @@ const LandingPage = () => {
                     <div className="popup-content">
                         <h2>{popupStory.theme}</h2>
                         <p>{popupStory.content}</p>
+                        <div className="popup-footer">
                         <button onClick={handleClosePopup}>Close</button>
+                        </div>
                     </div>
                 </div>
             )}
