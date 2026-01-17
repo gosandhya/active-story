@@ -1,30 +1,44 @@
-/* Import Google Font */
-@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&display=swap');
+/* Import Modern Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* Color Palette */
+/* Modern Color Palette */
 :root {
-    --main-color: #FF6B6B; /* Coral */
-    --accent-color: #6DD3CE; /* Aqua */
-    --background-color: #F7F2E7; /* Light Sand */
+    --primary-color: #6366F1; /* Modern indigo */
+    --primary-hover: #4F46E5;
+    --secondary-color: #8B5CF6; /* Purple accent */
+    --background: #FAFAFA; /* Clean light gray */
+    --surface: #FFFFFF;
+    --text-primary: #1F2937;
+    --text-secondary: #6B7280;
+    --border: #E5E7EB;
+    --success: #10B981;
+    --shadow: rgba(0, 0, 0, 0.1);
 }
 
 /* General Page Styling */
 body {
-    font-family: 'Comic Neue', cursive; /* Fun, playful font */
-    background-color: var(--background-color); /* Use the light sand background */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-color: var(--background);
+    margin: 0;
 }
 
 .landing-page {
-    padding: 20px;
-    font-family: 'Comic Neue', cursive; /* Consistent font */
-    color: #4A4A4A; /* Soft dark gray for readability */
+    padding: 40px 20px;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .generate-story-section {
     display: flex;
-    flex-direction: column; /* Stack items vertically */
-    align-items: center; /* Center items horizontally */
-    margin-bottom: 40px;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 60px;
+    background: var(--surface);
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px var(--shadow);
 }
 
 .saved-stories-section {
@@ -33,39 +47,80 @@ body {
 
 h2 {
     text-align: center;
-    margin-bottom: 20px;
-    color: var(--main-color); /* Use coral for headings */
-    font-weight: 700; /* Make headings bold */
+    margin-bottom: 24px;
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 24px;
+    letter-spacing: -0.02em;
+}
+
+.theme-input-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    width: 100%;
+    max-width: 600px;
+}
+
+/* Make speech button inline and small */
+.theme-input-container .speech-button-inline {
+    padding: 10px;
+    color: var(--text-secondary);
+}
+
+.theme-input-container .speech-button-inline:hover {
+    color: var(--primary-color);
+    background-color: rgba(99, 102, 241, 0.05);
+}
+
+.theme-input-container .speech-button-inline svg {
+    width: 20px;
+    height: 20px;
 }
 
 .generate-story-section input[type="text"] {
-    padding: 15px; /* Increased padding for a bigger text box */
-    margin: 10px;
-    border-radius: 10px; /* Softer, more rounded edges */
-    border: 2px solid var(--main-color); /* Coral border */
-    width: 100%; /* Full width for centering */
-    max-width: 400px; /* Increased maximum width for input box */
-    font-family: 'Comic Neue', cursive;
-    background-color: #FFEBE8; /* Light coral background */
-    box-sizing: border-box; /* Include padding and border in width */
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    flex: 1;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    background-color: var(--surface);
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.generate-story-section input[type="text"]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .generate-story-section button {
-    margin: 10px;
-    padding: 10px 20px;
-    background: var(--accent-color); /* Use aqua for buttons */
+    margin: 10px 0;
+    padding: 14px 32px;
+    background: var(--primary-color);
     color: white;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     cursor: pointer;
-    font-family: 'Comic Neue', cursive;
-    transition: background 0.3s;
-    width: 100%; /* Full width for centering */
-    max-width: 300px; /* Maximum width for button */
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    transition: all 0.2s ease;
+    max-width: 240px;
+    box-shadow: 0 1px 2px var(--shadow);
 }
 
 .generate-story-section button:hover {
-    background: #4DD4C8; /* Slightly darker aqua on hover */
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.generate-story-section button:active {
+    transform: translateY(0);
 }
 
 .improvisations-input {
@@ -74,36 +129,42 @@ h2 {
 
 /* Saved Stories Styling */
 .stories-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    padding: 0 20px;
 }
 
 .story-card {
-    background: #FFEBE8; /* Light coral */
-    border-radius: 12px;
-    padding: 15px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15); /* Softer shadow */
-    width: 300px;
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 1px 3px var(--shadow);
     box-sizing: border-box;
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border);
 }
 
 .story-card:hover {
-    transform: scale(1.05); /* Slight hover effect */
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+    border-color: var(--primary-color);
 }
 
 .story-card h2 {
     margin-top: 0;
-    color: var(--main-color); /* Use coral for story card headings */
-    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 18px;
 }
 
 .story-card p {
-    margin: 10px 0;
-    color: #4A4A4A;
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
 }
 
 /* Popup Styling */
@@ -113,53 +174,110 @@ h2 {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 1000;
 }
 
 .popup-content {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    width: 80%;
-    max-width: 600px;
-    max-height: 80%;
-    overflow-y: auto;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    background: var(--surface);
+    padding: 0;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 85vh;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-    height: auto;
+    position: relative;
+    overflow: hidden;
 }
 
-.popup-content h2, 
-.popup-content p {
-    margin-bottom: 20px;
-    color: #4A4A4A;
-    font-family: 'Comic Neue', cursive;
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 28px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.popup-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.popup-close {
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.popup-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-primary);
+}
+
+.popup-body {
+    padding: 28px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.popup-body p {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 16px;
+    line-height: 1.8;
 }
 
 .popup-footer {
     display: flex;
-    justify-content: center;
-    margin-top: auto;
+    gap: 12px;
+    padding: 20px 28px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
 }
 
 .popup-footer button {
-    padding: 10px 20px;
-    background: var(--accent-color); /* Use aqua for popup button */
+    flex: 1;
+    padding: 12px 24px;
+    background: var(--primary-color);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
-    font-family: 'Comic Neue', cursive;
-    transition: background 0.3s;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .popup-footer button:hover {
-    background: #4DD4C8; /* Darker aqua on hover */
+    background: var(--primary-hover);
+    transform: translateY(-1px);
 }
 
 
@@ -178,4 +296,72 @@ h2 {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* Streaming Story Popup */
+.streaming-popup {
+    min-height: 400px;
+}
+
+.streaming-story-content {
+    background: #FFEBE8;
+    padding: 20px;
+    border-radius: 8px;
+    min-height: 200px;
+    font-size: 18px;
+    line-height: 1.6;
+    color: #4A4A4A;
+    font-family: 'Comic Neue', cursive;
+    margin-bottom: 20px;
+    overflow-y: auto;
+    max-height: 400px;
+}
+
+.generating-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px;
+    background: #E8F4F3;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.generating-indicator .sound-wave {
+    font-size: 24px;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+.popup-footer {
+    gap: 10px;
+}
+
+/* Highlighted word during audio playback */
+.highlighted-word {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+    font-weight: 600;
+    color: var(--primary-color, #6366F1);
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    animation: highlightPulse 0.5s ease;
+}
+
+@keyframes highlightPulse {
+    0% {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(139, 92, 246, 0.3) 100%);
+    }
+    100% {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+    }
 }

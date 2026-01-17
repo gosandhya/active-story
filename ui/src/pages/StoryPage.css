@@ -1,86 +1,343 @@
-/* Story Page Styling - Matches Landing Page Theme */
+/* Import Modern Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Modern Color Palette */
+:root {
+    --primary-color: #6366F1;
+    --primary-hover: #4F46E5;
+    --secondary-color: #8B5CF6;
+    --background: #FAFAFA;
+    --surface: #FFFFFF;
+    --text-primary: #1F2937;
+    --text-secondary: #6B7280;
+    --border: #E5E7EB;
+    --success: #10B981;
+    --shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* Story Page Styling - Modern Chat Interface */
 .story-page {
-    padding: 20px;
-    font-family: 'Comic Neue', cursive; /* Consistent playful font */
-    background-color: var(--background-color); /* Use the same background */
-    color: #4A4A4A; /* Soft dark gray for readability */
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background);
+    color: var(--text-primary);
 }
 
-h2 {
+.story-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: var(--surface);
+    box-shadow: 0 1px 3px var(--shadow);
+    border-bottom: 1px solid var(--border);
+}
+
+.story-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.audio-control-button {
+    padding: 10px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.audio-control-button:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.audio-control-button svg {
+    width: 20px;
+    height: 20px;
+}
+
+.home-button {
+    padding: 10px 18px;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.home-button:hover {
+    background: var(--background);
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+}
+
+/* Story turns container - scrollable chat area */
+.story-turns-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Individual story turn bubble */
+.story-turn {
+    max-width: 75%;
+    padding: 16px 20px;
+    border-radius: 16px;
+    animation: fadeIn 0.3s ease-in;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Story (AI) turns - align left, subtle background */
+.story-turn.story-turn {
+    align-self: flex-start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 4px;
+}
+
+/* User turns - align right, primary color background */
+.story-turn.user-turn {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.turn-label {
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.user-turn .turn-label {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.turn-text {
+    font-size: 15px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    color: var(--text-primary);
+}
+
+.user-turn .turn-text {
+    color: white;
+}
+
+/* Highlighted word during audio playback */
+.highlighted-word {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+    font-weight: 600;
+    color: var(--primary-color);
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    animation: highlightPulse 0.5s ease;
+}
+
+@keyframes highlightPulse {
+    0% {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(139, 92, 246, 0.3) 100%);
+    }
+    100% {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+    }
+}
+
+/* Streaming indicator */
+.streaming-indicator {
+    display: inline-block;
+    color: var(--primary-color);
+    animation: blink 1s infinite;
+    margin-left: 4px;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* Typing indicator (three dots) */
+.typing-indicator {
+    display: flex;
+    gap: 4px;
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    animation: typing 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Story complete message */
+.story-complete {
     text-align: center;
-    margin-bottom: 20px;
-    color: var(--main-color); /* Coral for consistency */
-    font-weight: 700; /* Bold for emphasis */
+    padding: 32px;
+    background: var(--surface);
+    border-radius: 16px;
+    margin: 20px;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px var(--shadow);
 }
 
-.story-content {
-    margin-bottom: 20px;
-    padding: 20px;
-    background: #FFEBE8; /* Light coral to match theme */
-    border-radius: 12px; /* Softer rounded edges */
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15); /* Soft shadow */
-    font-family: 'Comic Neue', cursive; /* Consistent font */
+.story-complete p {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 16px;
 }
 
+.story-complete button {
+    padding: 12px 28px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.story-complete button:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+/* Improvisation input section */
 .improvisation-section {
-    margin-bottom: 20px;
-    text-align: center;
+    padding: 20px 24px;
+    background: var(--surface);
+    box-shadow: 0 -1px 3px var(--shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    border-top: 1px solid var(--border);
+}
+
+.improv-input-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 700px;
 }
 
 .improvisation-section input[type="text"] {
-    padding: 15px; /* Increased padding for comfort */
-    margin: 10px;
-    border-radius: 10px;
-    border: 2px solid var(--main-color); /* Coral border */
-    width: 100%; /* Full width for centering */
-    max-width: 400px; /* Max width for input */
-    font-family: 'Comic Neue', cursive;
-    background-color: #FFEBE8; /* Light coral background */
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    flex: 1;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    background-color: var(--surface);
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.improvisation-section input[type="text"]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .improvisation-section button {
-    margin: 10px;
-    padding: 10px 20px;
-    background: var(--accent-color); /* Aqua for buttons */
+    padding: 14px 28px;
+    background: var(--primary-color);
     color: white;
     border: none;
-    border-radius: 10px; /* Rounded for a fun look */
+    border-radius: 12px;
     cursor: pointer;
-    font-family: 'Comic Neue', cursive;
-    transition: background 0.3s;
-    width: 100%; /* Full width for centering */
-    max-width: 300px; /* Max width */
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    transition: all 0.2s ease;
 }
 
-.improvisation-section button:hover {
-    background: #4DD4C8; /* Darker aqua on hover */
+.improvisation-section button:disabled {
+    background: var(--border);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+    transform: none;
 }
 
-button {
-    padding: 10px 20px;
-    background: var(--accent-color); /* Aqua for buttons */
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-family: 'Comic Neue', cursive;
-    transition: background 0.3s;
-}
-
-button:hover {
-    background: #4DD4C8; /* Darker aqua on hover */
+.improvisation-section button:not(:disabled):hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
 }
 
 /* Spinner for buttons */
 .spinner {
     border: 3px solid rgba(255, 255, 255, 0.3);
     border-radius: 50%;
-    border-top: 3px solid #fff; /* White spinner */
+    border-top: 3px solid #fff;
     width: 15px;
     height: 15px;
     animation: spin 1s linear infinite;
     display: inline-block;
-    margin-right: 5px; /* Space between spinner and text */
+    margin-right: 8px;
 }
 
 @keyframes spin {

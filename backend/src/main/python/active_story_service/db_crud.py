@@ -12,9 +12,14 @@ story_collection = database.get_collection("stories")
 async def add_story(story_data: Dict[str, Any]) -> str:
     """
     Add a new story to the database.
+    If story_data already has a story_id, use it. Otherwise generate new one.
     """
-    story_id = str(uuid.uuid4())
-    story_data["story_id"] = story_id
+    if "story_id" not in story_data or not story_data["story_id"]:
+        story_id = str(uuid.uuid4())
+        story_data["story_id"] = story_id
+    else:
+        story_id = story_data["story_id"]
+
     await story_collection.insert_one(story_data)
     return story_id
 

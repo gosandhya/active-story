@@ -1,0 +1,123 @@
+.speech-button-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Inline microphone button - standard input style */
+.speech-button-inline {
+  background: transparent;
+  border: none;
+  padding: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #6B7280; /* Darker gray for better visibility */
+  border-radius: 4px;
+}
+
+.speech-button-inline:hover {
+  background-color: rgba(99, 102, 241, 0.08);
+  color: #6366F1; /* Primary color on hover */
+}
+
+.speech-button-inline:active {
+  transform: scale(0.95);
+}
+
+.speech-button-inline.listening {
+  color: #EF4444; /* Bright red when listening */
+  background-color: rgba(239, 68, 68, 0.1);
+  animation: pulse-inline 1.5s ease-in-out infinite;
+}
+
+.speech-button-inline svg {
+  width: 20px;
+  height: 20px;
+}
+
+@keyframes pulse-inline {
+  0%, 100% {
+    transform: scale(1);
+    background-color: rgba(239, 68, 68, 0.1);
+  }
+  50% {
+    transform: scale(1.05);
+    background-color: rgba(239, 68, 68, 0.2);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 4px 10px rgba(255, 107, 107, 0.5);
+  }
+}
+
+.mic-icon {
+  font-size: 24px;
+}
+
+.listening-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #FF6B6B;
+  font-weight: 500;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #FF6B6B;
+  border-radius: 50%;
+  animation: pulse-dot 1s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.listening-text {
+  font-size: 14px;
+  font-family: 'Comic Neue', cursive;
+}
+
+.speech-error {
+  margin-top: 5px;
+  color: #FF6B6B;
+}
+
+.speech-error small {
+  font-size: 12px;
+}
+
+.speech-button-unsupported {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  opacity: 0.5;
+}
+
+.speech-button-unsupported span {
+  font-size: 24px;
+  cursor: not-allowed;
+}
+
+.speech-button-unsupported small {
+  font-size: 11px;
+  color: #666;
+  text-align: center;
+}
