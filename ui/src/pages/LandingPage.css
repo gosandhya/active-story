@@ -41,42 +41,73 @@ body {
     box-shadow: 0 1px 3px var(--shadow);
 }
 
-/* Version Toggle */
-.version-toggle {
+/* Agentic Mode Toggle */
+.agentic-toggle {
     display: flex;
-    gap: 0;
+    align-items: center;
+    gap: 12px;
     margin-bottom: 20px;
-    background: var(--background);
-    padding: 4px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
 }
 
-.version-btn {
-    padding: 10px 24px;
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
+.toggle-label {
     font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+}
+
+.toggle-label.active {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 56px;
+    height: 28px;
     cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.2s ease;
 }
 
-.version-btn:hover {
-    color: var(--text-primary);
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
-.version-btn.active {
-    background: var(--primary-color);
-    color: white;
-    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+.toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--border);
+    border-radius: 28px;
+    transition: all 0.3s ease;
 }
 
-.version-btn.active:hover {
-    background: var(--primary-hover);
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(28px);
+}
+
+.toggle-switch:hover .toggle-slider {
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.3);
 }
 
 .saved-stories-section {
@@ -182,12 +213,40 @@ h2 {
     cursor: pointer;
     transition: all 0.2s ease;
     border: 1px solid var(--border);
+    position: relative;
 }
 
 .story-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
     border-color: var(--primary-color);
+}
+
+.delete-story-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.story-card:hover .delete-story-btn {
+    opacity: 1;
+}
+
+.delete-story-btn:hover {
+    background: #FEE2E2;
+    color: #DC2626;
 }
 
 .story-card h2 {

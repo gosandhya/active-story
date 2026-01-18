@@ -2,6 +2,11 @@ from pymongo import MongoClient
 from motor.motor_asyncio import AsyncIOMotorClient
 from typing import Dict, Any, List
 import uuid
+import json
+from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+
+# Serializer for decoding LangGraph checkpoints
+_serde = JsonPlusSerializer()
 
 # MongoDB setup
 MONGO_DETAILS = "mongodb://root:password1@localhost:27017/?authSource=admin&readPreference=primary&ssl=false"
@@ -88,12 +93,28 @@ async def get_latest_checkpoint(thread_id: str) -> Dict[str, Any]:
     Get the most recent checkpoint for a thread.
     LangGraph stores checkpoints with thread_id in the document.
     """
-    # LangGraph uses thread_id as part of the checkpoint key
     checkpoint = await checkpoint_collection.find_one(
         {"thread_id": thread_id},
-        sort=[("checkpoint_id", -1)]  # Get latest checkpoint
+        sort=[("checkpoint_id", -1)]
     )
-    return checkpoint if checkpoint else {}
+    if not checkpoint:
+        return {}
+
+    # Deserialize the checkpoint data
+    try:
+        checkpoint_data = checkpoint.get("checkpoint", b"")
+        if checkpoint_data:
+            decoded = _serde.loads_typed((checkpoint.get("type", ""), checkpoint_data))
+            # channel_values is inside the decoded checkpoint
+            channel_values = decoded.get("channel_values", {})
+            return {
+                "thread_id": checkpoint.get("thread_id"),
+                "channel_values": channel_values
+            }
+    except Exception as e:
+        print(f"Error deserializing checkpoint: {e}")
+
+    return {"thread_id": checkpoint.get("thread_id"), "channel_values": {}}
 
 
 async def get_all_story_threads() -> List[Dict[str, Any]]:
@@ -113,8 +134,27 @@ async def get_all_story_threads() -> List[Dict[str, Any]]:
 
     stories = []
     async for doc in checkpoint_collection.aggregate(pipeline):
-        if doc.get("thread_id"):
-            stories.append(doc)
+        thread_id = doc.get("thread_id")
+        if not thread_id:
+            continue
+
+        # Deserialize the checkpoint data
+        try:
+            checkpoint_data = doc.get("checkpoint", b"")
+            if checkpoint_data:
+                decoded = _serde.loads_typed((doc.get("type", ""), checkpoint_data))
+                # channel_values is inside the decoded checkpoint
+                channel_values = decoded.get("channel_values", {})
+                stories.append({
+                    "thread_id": thread_id,
+                    "channel_values": channel_values
+                })
+            else:
+                stories.append({"thread_id": thread_id, "channel_values": {}})
+        except Exception as e:
+            print(f"Error deserializing checkpoint for {thread_id}: {e}")
+            stories.append({"thread_id": thread_id, "channel_values": {}})
+
     return stories
 
 
@@ -126,15 +166,22 @@ async def delete_thread_checkpoints(thread_id: str) -> bool:
     return result.deleted_count > 0
 
 
-def reconstruct_content(messages: List[Dict]) -> str:
+def reconstruct_content(messages: List) -> str:
     """
     Join all assistant messages into full story content.
-    Messages are in LangGraph format with 'role' and 'content' keys.
+    Handles both dict format and LangGraph message objects.
     """
     story_parts = []
     for msg in messages:
-        if msg.get("role") == "assistant" or msg.get("type") == "ai":
+        # Handle both dict format and LangGraph message objects
+        if isinstance(msg, dict):
+            msg_type = msg.get("type") or msg.get("role")
             content = msg.get("content", "")
+        else:
+            msg_type = getattr(msg, "type", None)
+            content = getattr(msg, "content", "")
+
+        if msg_type in ("ai", "assistant"):
             if content:
                 story_parts.append(content)
     return "\n\n".join(story_parts)

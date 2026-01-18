@@ -126,6 +126,25 @@ const LandingPage = () => {
         setTheme(transcript);
     };
 
+    const handleDeleteStory = async (e, storyId) => {
+        e.stopPropagation(); // Prevent card click
+        e.preventDefault();
+
+        // Remove from UI immediately
+        setStories(prev => prev.filter(s => s.story_id !== storyId));
+
+        // Then delete from backend
+        try {
+            const endpoint = storyVersion === 'v2'
+                ? `http://localhost:8000/story-v2/${storyId}`
+                : `http://localhost:8000/delete-story/${storyId}`;
+
+            await fetch(endpoint, { method: 'DELETE' });
+        } catch (error) {
+            console.error('Error deleting story:', error);
+        }
+    };
+
     const handlePlayStory = async () => {
         if (!popupStory?.content) return;
 
@@ -215,20 +234,18 @@ const LandingPage = () => {
             <div className="generate-story-section">
                 <h2>Generate New Story</h2>
 
-                {/* Version Toggle */}
-                <div className="version-toggle">
-                    <button
-                        className={`version-btn ${storyVersion === 'v1' ? 'active' : ''}`}
-                        onClick={() => setStoryVersion('v1')}
-                    >
-                        V1 (Fast)
-                    </button>
-                    <button
-                        className={`version-btn ${storyVersion === 'v2' ? 'active' : ''}`}
-                        onClick={() => setStoryVersion('v2')}
-                    >
-                        V2 (Agentic)
-                    </button>
+                {/* Agentic Mode Toggle */}
+                <div className="agentic-toggle">
+                    <span className={`toggle-label ${storyVersion === 'v1' ? 'active' : ''}`}>Simple</span>
+                    <label className="toggle-switch">
+                        <input
+                            type="checkbox"
+                            checked={storyVersion === 'v2'}
+                            onChange={(e) => setStoryVersion(e.target.checked ? 'v2' : 'v1')}
+                        />
+                        <span className="toggle-slider"></span>
+                    </label>
+                    <span className={`toggle-label ${storyVersion === 'v2' ? 'active' : ''}`}>Agentic</span>
                 </div>
 
                 <div className="theme-input-container">
@@ -261,8 +278,18 @@ const LandingPage = () => {
                             className="story-card"
                             onClick={() => handleViewStory(story.story_id)}
                         >
+                            <button
+                                className="delete-story-btn"
+                                onClick={(e) => handleDeleteStory(e, story.story_id)}
+                                title="Delete story"
+                            >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
                             <h2>{story.theme}</h2>
-                            <p>{story.content.slice(0, 100)}...</p>
+                            <p>{story.content?.slice(0, 100) || 'No content yet'}...</p>
                         </div>
                     ))}
                 </div>

@@ -6,7 +6,9 @@ from .llm import anthropic_messages
 async def mapper_node(state):
     ws = state["world_state"]
     sp = state["story_progress"]
-    user_text = state["messages"][-1]["content"]
+    # Handle both dict and LangGraph message objects
+    last_msg = state["messages"][-1]
+    user_text = last_msg["content"] if isinstance(last_msg, dict) else last_msg.content
 
     next_turn = sp["turn"] + 1
     phase = compute_phase(next_turn, sp["max_turns"])

@@ -1,12 +1,17 @@
 import os, httpx
+from pathlib import Path
+from dotenv import load_dotenv
 
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+# Load .env from project root
+env_path = Path(__file__).parent.parent.parent.parent.parent.parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
 async def anthropic_messages(system, messages, max_tokens=600):
-    if not ANTHROPIC_API_KEY:
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not api_key:
         raise RuntimeError("ANTHROPIC_API_KEY not set")
     headers = {
-        "x-api-key": ANTHROPIC_API_KEY,
+        "x-api-key": api_key,
         "content-type": "application/json",
         "anthropic-version": "2023-06-01"
     }
