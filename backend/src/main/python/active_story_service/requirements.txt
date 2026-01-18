@@ -26,5 +26,8 @@ tomli==2.0.1
 typing_extensions==4.12.2
 urllib3==2.2.2
 uvicorn==0.25.0
-pymongo 
+pymongo
 motor
+langgraph>=0.2.0
+langgraph-checkpoint-mongodb>=1.0.0
+anthropic>=0.31.0

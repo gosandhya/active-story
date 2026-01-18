@@ -66,3 +66,88 @@ async def delete_story(story_id: str) -> bool:
     result = await story_collection.delete_one({"story_id": story_id})
     return result.deleted_count > 0
 
+
+# ============================================================================
+# V2 Checkpoint Helpers - For LangGraph-based stories
+# ============================================================================
+
+# Checkpoint database (separate from storybook)
+checkpoint_client = AsyncIOMotorClient(MONGO_DETAILS)
+checkpoint_database = checkpoint_client.story_checkpoints
+checkpoint_collection = checkpoint_database.get_collection("checkpoints")
+checkpoint_writes_collection = checkpoint_database.get_collection("checkpoint_writes")
+
+
+async def get_checkpoint_collection():
+    """Get the LangGraph checkpoint collection."""
+    return checkpoint_collection
+
+
+async def get_latest_checkpoint(thread_id: str) -> Dict[str, Any]:
+    """
+    Get the most recent checkpoint for a thread.
+    LangGraph stores checkpoints with thread_id in the document.
+    """
+    # LangGraph uses thread_id as part of the checkpoint key
+    checkpoint = await checkpoint_collection.find_one(
+        {"thread_id": thread_id},
+        sort=[("checkpoint_id", -1)]  # Get latest checkpoint
+    )
+    return checkpoint if checkpoint else {}
+
+
+async def get_all_story_threads() -> List[Dict[str, Any]]:
+    """
+    List all unique thread_ids with their latest checkpoint data.
+    Returns story summaries for the V2 story list.
+    """
+    # Aggregate to get latest checkpoint per thread_id
+    pipeline = [
+        {"$sort": {"checkpoint_id": -1}},
+        {"$group": {
+            "_id": "$thread_id",
+            "latest_checkpoint": {"$first": "$$ROOT"}
+        }},
+        {"$replaceRoot": {"newRoot": "$latest_checkpoint"}}
+    ]
+
+    stories = []
+    async for doc in checkpoint_collection.aggregate(pipeline):
+        if doc.get("thread_id"):
+            stories.append(doc)
+    return stories
+
+
+async def delete_thread_checkpoints(thread_id: str) -> bool:
+    """Delete all checkpoints for a thread."""
+    result = await checkpoint_collection.delete_many({"thread_id": thread_id})
+    # Also delete from checkpoint_writes if it exists
+    await checkpoint_writes_collection.delete_many({"thread_id": thread_id})
+    return result.deleted_count > 0
+
+
+def reconstruct_content(messages: List[Dict]) -> str:
+    """
+    Join all assistant messages into full story content.
+    Messages are in LangGraph format with 'role' and 'content' keys.
+    """
+    story_parts = []
+    for msg in messages:
+        if msg.get("role") == "assistant" or msg.get("type") == "ai":
+            content = msg.get("content", "")
+            if content:
+                story_parts.append(content)
+    return "\n\n".join(story_parts)
+
+
+def extract_theme(world_facts: List[Dict]) -> str:
+    """
+    Extract theme from the first world fact.
+    Theme is stored as 'Theme: <theme text>' in world_facts.
+    """
+    for fact in world_facts:
+        text = fact.get("text", "")
+        if text.startswith("Theme:"):
+            return text.replace("Theme:", "").strip()
+    return "Untitled Story"
+

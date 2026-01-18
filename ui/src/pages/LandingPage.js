@@ -14,15 +14,34 @@ const LandingPage = () => {
     const [generatedStoryId, setGeneratedStoryId] = useState(null); // Generated story ID
     const [isPlayingAudio, setIsPlayingAudio] = useState(false);
     const [currentWordIndex, setCurrentWordIndex] = useState(-1);
+    const [storyVersion, setStoryVersion] = useState('v1'); // v1 or v2
     const audioRef = useRef(null);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchStories = async () => {
             try {
-                const response = await fetch('http://localhost:8000/get-all-stories/');
+                // Fetch from appropriate endpoint based on version
+                const endpoint = storyVersion === 'v2'
+                    ? 'http://localhost:8000/stories-v2/'
+                    : 'http://localhost:8000/get-all-stories/';
+
+                const response = await fetch(endpoint);
                 const data = await response.json();
-                setStories(data);
+
+                // Normalize data format for both versions
+                if (storyVersion === 'v2') {
+                    // V2 uses thread_id instead of story_id
+                    setStories(data.map(story => ({
+                        story_id: story.thread_id,
+                        theme: story.theme,
+                        content: story.content_preview,
+                        turn: story.turn,
+                        phase: story.phase
+                    })));
+                } else {
+                    setStories(data);
+                }
             } catch (error) {
                 console.error('Error fetching stories:', error);
             }
@@ -37,7 +56,7 @@ const LandingPage = () => {
                 audioRef.current = null;
             }
         };
-    }, []);
+    }, [storyVersion]); // Re-fetch when version changes
 
     const handleGenerateStory = async () => {
         if (!theme) {
@@ -48,8 +67,10 @@ const LandingPage = () => {
         // Generate a unique ID upfront (simple UUID v4)
         const newStoryId = crypto.randomUUID();
 
-        // Navigate to story page with the ID and theme
-        navigate(`/story/${newStoryId}`, { state: { theme, isNew: true } });
+        // Navigate to story page with the ID, theme, and version
+        navigate(`/story/${newStoryId}`, {
+            state: { theme, isNew: true, version: storyVersion }
+        });
     };
 
     const handleViewStory = async (storyId) => {
@@ -63,9 +84,26 @@ const LandingPage = () => {
         setIsLoading(true); // Start loading
 
         try {
-            const response = await fetch(`http://localhost:8000/get-story/?story_id=${storyId}`);
+            // Fetch from appropriate endpoint based on version
+            const endpoint = storyVersion === 'v2'
+                ? `http://localhost:8000/story-v2/${storyId}`
+                : `http://localhost:8000/get-story/?story_id=${storyId}`;
+
+            const response = await fetch(endpoint);
             const data = await response.json();
-            setPopupStory(data);
+
+            // Normalize data for popup display
+            if (storyVersion === 'v2') {
+                setPopupStory({
+                    story_id: data.thread_id,
+                    theme: data.theme,
+                    content: data.content,
+                    turn: data.turn,
+                    phase: data.phase
+                });
+            } else {
+                setPopupStory(data);
+            }
         } catch (error) {
             console.error('Error fetching story:', error);
         } finally {
@@ -176,6 +214,23 @@ const LandingPage = () => {
         <div className="landing-page">
             <div className="generate-story-section">
                 <h2>Generate New Story</h2>
+
+                {/* Version Toggle */}
+                <div className="version-toggle">
+                    <button
+                        className={`version-btn ${storyVersion === 'v1' ? 'active' : ''}`}
+                        onClick={() => setStoryVersion('v1')}
+                    >
+                        V1 (Fast)
+                    </button>
+                    <button
+                        className={`version-btn ${storyVersion === 'v2' ? 'active' : ''}`}
+                        onClick={() => setStoryVersion('v2')}
+                    >
+                        V2 (Agentic)
+                    </button>
+                </div>
+
                 <div className="theme-input-container">
                     <input
                         type="text"

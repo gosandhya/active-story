@@ -20,9 +20,13 @@ const StoryPage = () => {
     const [preparingAudio, setPreparingAudio] = useState(false);
     const [currentWordIndex, setCurrentWordIndex] = useState(-1); // For word highlighting
     const [activeTurnIndex, setActiveTurnIndex] = useState(-1); // Which turn is currently playing
+    const [worldState, setWorldState] = useState(null); // V2: Track world state
     const audioRef = useRef(null);
     const hasInitializedRef = useRef(false);
     const preparedAudioRef = useRef(null); // Store prepared audio
+
+    // Get version from location state (defaults to v1)
+    const version = location.state?.version || 'v1';
 
     // Single effect - initialize story (generate new OR fetch existing)
     useEffect(() => {
@@ -42,12 +46,20 @@ const StoryPage = () => {
 
         if (location.state?.isNew && location.state?.theme) {
             // NEW story - generate with this storyId
-            console.log('Generating NEW story with ID:', storyId);
-            handleStreamingGeneration(location.state.theme, storyId);
+            console.log('Generating NEW story with ID:', storyId, 'Version:', version);
+            if (version === 'v2') {
+                handleV2Generation(location.state.theme, storyId);
+            } else {
+                handleStreamingGeneration(location.state.theme, storyId);
+            }
         } else {
             // EXISTING story - fetch from backend
-            console.log('Fetching EXISTING story:', storyId);
-            fetchExistingStory();
+            console.log('Fetching EXISTING story:', storyId, 'Version:', version);
+            if (version === 'v2') {
+                fetchExistingV2Story();
+            } else {
+                fetchExistingStory();
+            }
         }
 
         // Cleanup
@@ -378,6 +390,68 @@ const StoryPage = () => {
         }
     };
 
+    // V2: Non-streaming generation using the agentic endpoint
+    const handleV2Generation = async (theme, providedStoryId) => {
+        console.log('handleV2Generation: Starting with ID', providedStoryId);
+        setPreparingAudio(true); // Show loading state
+
+        try {
+            const response = await fetch('http://localhost:8000/story/turn', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    thread_id: providedStoryId,
+                    user_text: theme,
+                    theme: theme
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`V2 generation failed: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('V2 story generated:', data);
+
+            // Store world state for potential future use
+            setWorldState(data.world_state);
+
+            // Prepare audio before showing text
+            const audioReady = await prepareStoryAudio(data.story_text);
+
+            // Show the story
+            setStoryTurns([{ text: data.story_text, type: 'story' }]);
+            setPreparingAudio(false);
+
+            if (audioReady) {
+                await playPreparedAudio();
+            }
+        } catch (error) {
+            console.error('V2 generation error:', error);
+            setPreparingAudio(false);
+        }
+    };
+
+    // V2: Fetch existing story from checkpoint
+    const fetchExistingV2Story = async () => {
+        console.log('fetchExistingV2Story: Loading story', storyId);
+        try {
+            const response = await fetch(`http://localhost:8000/story-v2/${storyId}`);
+            const data = await response.json();
+
+            // Convert to turns format
+            setStoryTurns([{ text: data.content, type: 'story' }]);
+            setWorldState(data.world_state);
+            setImprovisationsCount(data.turn || 0);
+
+            console.log('V2 story loaded. NOT auto-playing audio.');
+        } catch (error) {
+            console.error('Error fetching V2 story:', error);
+        }
+    };
+
     const handleAddImprovisation = async () => {
         if (improvisationsCount >= maxImprovisations) {
             alert("You can only add improvisations 3 times.");
@@ -408,20 +482,46 @@ const StoryPage = () => {
         setLoadingImprov(true);
 
         try {
-            const response = await fetch('http://localhost:8000/continue-story/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    story_id: storyId,
-                    improv: userImprov,
-                }),
-            });
-            const data = await response.json();
+            let newContinuation;
 
-            // Extract just the new continuation (last part after \n\n\n)
-            const newContinuation = data.story.split('\n\n\n').pop();
+            if (version === 'v2') {
+                // V2: Use the agentic endpoint
+                const response = await fetch('http://localhost:8000/story/turn', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        thread_id: storyId,
+                        user_text: userImprov
+                        // No theme - this is a continuation
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`V2 continuation failed: ${response.status}`);
+                }
+
+                const data = await response.json();
+                newContinuation = data.story_text;
+                setWorldState(data.world_state);
+            } else {
+                // V1: Use the original endpoint
+                const response = await fetch('http://localhost:8000/continue-story/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        story_id: storyId,
+                        improv: userImprov,
+                    }),
+                });
+                const data = await response.json();
+
+                // Extract just the new continuation (last part after \n\n\n)
+                newContinuation = data.story.split('\n\n\n').pop();
+            }
 
             // Show preparing state
             setLoadingImprov(false);
