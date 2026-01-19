@@ -2,8 +2,9 @@
 V2 Agentic Story Endpoints
 
 Uses LangGraph for multi-step story generation with:
-- Mapper node: extracts intent and updates world state
-- Storyteller node: generates story based on world state
+- WorldBuilder node: extracts/invents world setup
+- Storyteller node: writes story using world state
+- Extractor node: captures new elements from story
 - MongoDB checkpointing for state persistence
 """
 
@@ -13,7 +14,7 @@ from fastapi import APIRouter, HTTPException
 from active_story_service.models_v2 import StoryTurnRequest, StoryTurnResponse, StoryListItem
 from active_story_service.db_crud import (
     get_latest_checkpoint, get_all_story_threads, delete_thread_checkpoints,
-    reconstruct_content, extract_theme
+    reconstruct_content, extract_theme_v2
 )
 from active_story_service.app.graph import build_graph
 from active_story_service.app.state import initial_state
@@ -30,12 +31,12 @@ async def story_turn(req: StoryTurnRequest):
     """
     V2 Story Turn Endpoint - handles both initial story and continuations.
 
-    For initial story: provide thread_id, user_text, and theme
+    For initial story: provide thread_id, user_text (and optionally theme)
     For continuation: provide thread_id and user_text only
     """
     try:
         # Build seed state if this is a new story (theme provided)
-        seed = initial_state(theme=req.theme) if req.theme else {}
+        seed = initial_state(user_input=req.theme) if req.theme else {}
 
         # Invoke the LangGraph agent
         result = await graph.ainvoke(
@@ -44,11 +45,9 @@ async def story_turn(req: StoryTurnRequest):
         )
 
         # Extract the latest assistant message (the new story segment)
-        # LangGraph messages are objects with .type and .content attributes
         last_ai = None
         messages = result.get("messages", [])
         for msg in reversed(messages):
-            # Handle both dict format and LangGraph message objects
             msg_type = msg.get("type") if isinstance(msg, dict) else getattr(msg, "type", None)
             if msg_type == "ai":
                 last_ai = msg
@@ -95,8 +94,8 @@ async def get_all_v2_stories():
             story_progress = channel_values.get("story_progress", {})
             messages = channel_values.get("messages", [])
 
-            # Get theme and content
-            theme = extract_theme(world_state.get("world_facts", []))
+            # Get theme and content using new world_state structure
+            theme = extract_theme_v2(world_state)
             content = reconstruct_content(messages)
             content_preview = content[:100] + "..." if len(content) > 100 else content
 
@@ -133,7 +132,8 @@ async def get_v2_story(thread_id: str):
         story_progress = channel_values.get("story_progress", {})
         messages = channel_values.get("messages", [])
 
-        theme = extract_theme(world_state.get("world_facts", []))
+        # Use new world_state structure for theme
+        theme = extract_theme_v2(world_state)
         content = reconstruct_content(messages)
 
         return {

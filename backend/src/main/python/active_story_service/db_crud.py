@@ -189,12 +189,36 @@ def reconstruct_content(messages: List) -> str:
 
 def extract_theme(world_facts: List[Dict]) -> str:
     """
-    Extract theme from the first world fact.
+    Extract theme from the first world fact (legacy V2 format).
     Theme is stored as 'Theme: <theme text>' in world_facts.
     """
     for fact in world_facts:
         text = fact.get("text", "")
         if text.startswith("Theme:"):
             return text.replace("Theme:", "").strip()
+    return "Untitled Story"
+
+
+def extract_theme_v2(world_state: Dict[str, Any]) -> str:
+    """
+    Extract theme from the new world_state structure.
+    Uses user_input, goal, or setting as the theme.
+    """
+    # Try user_input first (the original prompt)
+    user_input = world_state.get("user_input")
+    if user_input:
+        # Truncate if too long
+        return user_input[:50] + "..." if len(user_input) > 50 else user_input
+
+    # Fall back to goal
+    goal = world_state.get("goal")
+    if goal:
+        return goal[:50] + "..." if len(goal) > 50 else goal
+
+    # Fall back to setting
+    setting = world_state.get("setting")
+    if setting:
+        return setting[:50] + "..." if len(setting) > 50 else setting
+
     return "Untitled Story"
 

@@ -6,7 +6,16 @@ from dotenv import load_dotenv
 env_path = Path(__file__).parent.parent.parent.parent.parent.parent.parent / '.env'
 load_dotenv(dotenv_path=env_path)
 
-async def anthropic_messages(system, messages, max_tokens=600):
+# Model options
+HAIKU = "claude-3-haiku-20240307"
+SONNET = "claude-3-haiku-20240307"  # Testing with Haiku first
+
+
+async def anthropic_messages(system, messages, max_tokens=600, model=HAIKU):
+    """
+    Call Anthropic API with specified model.
+    Default is Haiku for speed/cost. Use Sonnet for creative tasks.
+    """
     api_key = os.getenv("ANTHROPIC_API_KEY")
     if not api_key:
         raise RuntimeError("ANTHROPIC_API_KEY not set")
@@ -16,7 +25,7 @@ async def anthropic_messages(system, messages, max_tokens=600):
         "anthropic-version": "2023-06-01"
     }
     payload = {
-        "model": "claude-3-haiku-20240307",
+        "model": model,
         "max_tokens": max_tokens,
         "system": system,
         "messages": messages,
