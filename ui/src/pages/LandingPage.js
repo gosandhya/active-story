@@ -19,6 +19,9 @@ const LandingPage = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        // Clear stories immediately when version changes
+        setStories([]);
+
         const fetchStories = async () => {
             try {
                 // Fetch from appropriate endpoint based on version
@@ -26,7 +29,11 @@ const LandingPage = () => {
                     ? 'http://localhost:8000/stories-v2/'
                     : 'http://localhost:8000/get-all-stories/';
 
-                const response = await fetch(endpoint);
+                // Add cache-busting to prevent stale data
+                const response = await fetch(endpoint, {
+                    cache: 'no-store',
+                    headers: { 'Cache-Control': 'no-cache' }
+                });
                 const data = await response.json();
 
                 // Normalize data format for both versions
@@ -305,7 +312,7 @@ const LandingPage = () => {
                         <div className="popup-body">
                             <p>
                                 {(() => {
-                                    const words = popupStory.content.split(/(\s+)/); // Preserve whitespace
+                                    const words = (popupStory.content || '').split(/(\s+)/); // Preserve whitespace
                                     let wordIndex = 0;
 
                                     return words.map((word, i) => {

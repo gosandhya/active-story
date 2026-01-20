@@ -6,6 +6,7 @@ class StoryState(TypedDict, total=False):
     messages: Annotated[List[dict], add_messages]
     story_state: Dict[str, Any]  # The prose-graph state
     turn: int
+    phase: str  # Story arc: "setup", "rising", "climax", "resolution"
 
 
 def initial_state() -> StoryState:
@@ -27,4 +28,5 @@ def initial_state() -> StoryState:
             "tension": None,       # What's unresolved, or None if resolved
         },
         "turn": 0,
+        "phase": "setup",          # Story arc phase
     }

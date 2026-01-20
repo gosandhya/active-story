@@ -16,6 +16,7 @@ class StoryTurnResponse(BaseModel):
     story_text: str  # Just the new story segment from this turn
     content: str  # Full accumulated story content
     turn: int
+    phase: str  # Story arc phase: setup, rising, climax, resolution
     story_state: Dict[str, Any]  # The prose-graph state
     tension: Optional[str] = None  # Current tension (or None if resolved)
 

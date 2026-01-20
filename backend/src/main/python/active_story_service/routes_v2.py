@@ -54,8 +54,23 @@ async def story_turn(req: StoryTurnRequest):
         else:
             story_text = ""
 
-        # Get story state
+        # Strip common preambles that LLM sometimes adds
+        preambles = [
+            "Here is the next part of the story:\n\n",
+            "Here is the next part of the story:\n",
+            "Here is the next part of the story:",
+            "Here's the next part:\n\n",
+            "Here's the next part:\n",
+            "Here's the next part:",
+        ]
+        for preamble in preambles:
+            if story_text.startswith(preamble):
+                story_text = story_text[len(preamble):].strip()
+                break
+
+        # Get story state and phase
         story_state = result.get("story_state", {})
+        phase = result.get("phase", "setup")
 
         # Full content is in story_so_far
         content = story_state.get("story_so_far", story_text)
@@ -65,6 +80,7 @@ async def story_turn(req: StoryTurnRequest):
             story_text=story_text,
             content=content,
             turn=result.get("turn", 1),
+            phase=phase,
             story_state=story_state,
             tension=story_state.get("tension")
         )
@@ -91,13 +107,21 @@ async def get_all_v2_stories():
             turn = channel_values.get("turn", 0)
             messages = channel_values.get("messages", [])
 
-            # Get theme from setting or first character
-            setting = story_state.get("setting", "")
-            chars = story_state.get("characters", [])
-            if chars and isinstance(chars[0], dict):
-                theme = f"{chars[0].get('name', 'Story')} - {setting}"
-            else:
-                theme = setting or "Untitled Story"
+            # Get theme from first user message (original input)
+            # Messages can be LangGraph message objects or dicts
+            theme = "Untitled Story"
+            for msg in messages:
+                # Handle LangGraph message objects (have .type attribute)
+                if hasattr(msg, 'type') and hasattr(msg, 'content'):
+                    if msg.type == "human":
+                        theme = msg.content or "Untitled Story"
+                        break
+                # Handle dict format
+                elif isinstance(msg, dict):
+                    msg_type = msg.get("type") or msg.get("role")
+                    if msg_type in ("human", "user"):
+                        theme = msg.get("content", "Untitled Story")
+                        break
 
             # Content preview
             content = story_state.get("story_so_far", "")
@@ -136,17 +160,26 @@ async def get_v2_story(thread_id: str):
         turn = channel_values.get("turn", 0)
         messages = channel_values.get("messages", [])
 
-        # Build theme from character + setting (same logic as list endpoint)
-        setting = story_state.get("setting", "")
-        chars = story_state.get("characters", [])
-        if chars and isinstance(chars[0], dict):
-            theme = f"{chars[0].get('name', 'Story')} - {setting}"
-        else:
-            theme = setting or "Untitled Story"
+        # Get theme from first user message (original input)
+        # Messages can be LangGraph message objects or dicts
+        theme = "Untitled Story"
+        for msg in messages:
+            # Handle LangGraph message objects (have .type attribute)
+            if hasattr(msg, 'type') and hasattr(msg, 'content'):
+                if msg.type == "human":
+                    theme = msg.content or "Untitled Story"
+                    break
+            # Handle dict format
+            elif isinstance(msg, dict):
+                msg_type = msg.get("type") or msg.get("role")
+                if msg_type in ("human", "user"):
+                    theme = msg.get("content", "Untitled Story")
+                    break
 
         return {
             "thread_id": thread_id,
             "turn": turn,
+            "phase": channel_values.get("phase", "setup"),
             "theme": theme,
             "story_state": story_state,
             "content": story_state.get("story_so_far", ""),

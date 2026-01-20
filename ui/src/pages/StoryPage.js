@@ -13,7 +13,6 @@ const StoryPage = () => {
     const [isStreaming, setIsStreaming] = useState(false);
     const [improvisation, setImprovisation] = useState('');
     const [improvisationsCount, setImprovisationsCount] = useState(0);
-    const [maxImprovisations] = useState(3);
     const [loadingImprov, setLoadingImprov] = useState(false);
     const [isPlayingAudio, setIsPlayingAudio] = useState(false);
     const [hasAudio, setHasAudio] = useState(false);
@@ -27,6 +26,9 @@ const StoryPage = () => {
 
     // Get version from location state (defaults to v1)
     const version = location.state?.version || 'v1';
+
+    // V1: 3 improvisations, V2: 6 to allow full story arc (setup → rising → climax → resolution)
+    const maxImprovisations = version === 'v2' ? 6 : 3;
 
     // Single effect - initialize story (generate new OR fetch existing)
     useEffect(() => {
