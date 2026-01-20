@@ -1,7 +1,9 @@
 """
-LangGraph definition for the V2 Agentic Story system.
+LangGraph definition for the V2 Story System.
 
-Flow: WorldBuilder → Storyteller → Extractor
+Flow:
+- Turn 1: WorldBuilder → Storyteller → Extractor
+- Turn 2+: Storyteller → Extractor
 """
 import os
 from langgraph.graph import StateGraph, START, END
@@ -25,14 +27,24 @@ def get_checkpointer():
     return _checkpointer
 
 
+def route_start(state) -> str:
+    """
+    Determine where to start:
+    - Turn 1 (no setting yet): go to WorldBuilder
+    - Turn 2+: go directly to Storyteller
+    """
+    story_state = state.get("story_state", {})
+    if story_state.get("setting") is None:
+        return "world_builder"
+    return "storyteller"
+
+
 def build_graph():
     """
     Build the story generation graph.
 
-    Flow:
-    1. WorldBuilder: extracts/invents world setup from user input
-    2. Storyteller: writes story segment using world state
-    3. Extractor: extracts new elements from story, updates world state
+    Turn 1: WorldBuilder → Storyteller → Extractor
+    Turn 2+: Storyteller → Extractor
     """
     g = StateGraph(StoryState)
 
@@ -41,10 +53,16 @@ def build_graph():
     g.add_node("storyteller", storyteller_node)
     g.add_node("extractor", extractor_node)
 
-    # Define flow
-    g.add_edge(START, "world_builder")
+    # Conditional start: WorldBuilder on turn 1, Storyteller on turn 2+
+    g.add_conditional_edges(START, route_start)
+
+    # WorldBuilder goes to Storyteller
     g.add_edge("world_builder", "storyteller")
+
+    # Storyteller goes to Extractor
     g.add_edge("storyteller", "extractor")
+
+    # Extractor ends the turn
     g.add_edge("extractor", END)
 
     saver = get_checkpointer()
