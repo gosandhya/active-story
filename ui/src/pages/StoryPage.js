@@ -20,7 +20,7 @@ const StoryPage = () => {
     const [preparingAudio, setPreparingAudio] = useState(false);
     const [currentWordIndex, setCurrentWordIndex] = useState(-1); // For word highlighting
     const [activeTurnIndex, setActiveTurnIndex] = useState(-1); // Which turn is currently playing
-    const [worldState, setWorldState] = useState(null); // V2: Track world state
+    const [storyState, setStoryState] = useState(null); // V2: Track story state (characters, tension, etc.)
     const audioRef = useRef(null);
     const hasInitializedRef = useRef(false);
     const preparedAudioRef = useRef(null); // Store prepared audio
@@ -415,8 +415,8 @@ const StoryPage = () => {
             const data = await response.json();
             console.log('V2 story generated:', data);
 
-            // Store world state for potential future use
-            setWorldState(data.world_state);
+            // Store story state (includes tension for detecting story completion)
+            setStoryState(data.story_state);
 
             // Prepare audio before showing text
             const audioReady = await prepareStoryAudio(data.story_text);
@@ -443,7 +443,7 @@ const StoryPage = () => {
 
             // Convert to turns format
             setStoryTurns([{ text: data.content, type: 'story' }]);
-            setWorldState(data.world_state);
+            setStoryState(data.story_state);
             setImprovisationsCount(data.turn || 0);
 
             console.log('V2 story loaded. NOT auto-playing audio.');
@@ -504,7 +504,7 @@ const StoryPage = () => {
 
                 const data = await response.json();
                 newContinuation = data.story_text;
-                setWorldState(data.world_state);
+                setStoryState(data.story_state);
             } else {
                 // V1: Use the original endpoint
                 const response = await fetch('http://localhost:8000/continue-story/', {
@@ -695,8 +695,12 @@ const StoryPage = () => {
                 )}
             </div>
 
-            {/* Improvisation input - only show after story generation is complete */}
-            {improvisationsCount < maxImprovisations && !isStreaming && storyTurns.length > 0 && !loadingImprov && (
+            {/* Improvisation input - only show after story generation, hide if story is complete */}
+            {improvisationsCount < maxImprovisations &&
+             !isStreaming &&
+             storyTurns.length > 0 &&
+             !loadingImprov &&
+             !(version === 'v2' && storyState && storyState.tension === null) && (
                 <div className="improvisation-section">
                     <div className="improv-input-container">
                         <input
@@ -717,7 +721,9 @@ const StoryPage = () => {
                 </div>
             )}
 
-            {improvisationsCount >= maxImprovisations && (
+            {/* Story complete: either max turns reached (V1) or tension resolved (V2) */}
+            {(improvisationsCount >= maxImprovisations ||
+              (version === 'v2' && storyState && storyState.tension === null)) && (
                 <div className="story-complete">
                     <p>🎉 Story Complete!</p>
                     <button onClick={handleGoHome}>

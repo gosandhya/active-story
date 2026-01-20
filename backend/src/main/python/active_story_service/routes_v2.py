@@ -1,11 +1,10 @@
 """
-V2 Agentic Story Endpoints
+V2 Story Endpoints
 
-Uses LangGraph for multi-step story generation with:
-- WorldBuilder node: extracts/invents world setup
-- Storyteller node: writes story using world state
-- Extractor node: captures new elements from story
-- MongoDB checkpointing for state persistence
+Uses LangGraph with a simple prose-graph state:
+- WorldBuilder: creates initial world (turn 1 only)
+- Storyteller: writes story from user input + state
+- Extractor: updates state from what was written
 """
 
 from typing import List
@@ -14,13 +13,13 @@ from fastapi import APIRouter, HTTPException
 from active_story_service.models_v2 import StoryTurnRequest, StoryTurnResponse, StoryListItem
 from active_story_service.db_crud import (
     get_latest_checkpoint, get_all_story_threads, delete_thread_checkpoints,
-    reconstruct_content, extract_theme_v2
+    reconstruct_content
 )
 from active_story_service.app.graph import build_graph
 from active_story_service.app.state import initial_state
 
-# Create router for V2 endpoints (no prefix - main.py handles routing)
-router = APIRouter(tags=["V2 Agentic Stories"])
+# Create router for V2 endpoints
+router = APIRouter(tags=["V2 Stories"])
 
 # Initialize the LangGraph agent
 graph = build_graph()
@@ -30,17 +29,13 @@ graph = build_graph()
 async def story_turn(req: StoryTurnRequest):
     """
     V2 Story Turn Endpoint - handles both initial story and continuations.
-
-    For initial story: provide thread_id, user_text (and optionally theme)
-    For continuation: provide thread_id and user_text only
     """
     try:
-        # Build seed state if this is a new story (theme provided)
-        seed = initial_state(user_input=req.theme) if req.theme else {}
-
-        # Invoke the LangGraph agent
+        # Only pass the new message - LangGraph loads previous state from checkpoint
+        # The graph's conditional routing will run WorldBuilder on turn 1 (no setting)
+        # and skip to Storyteller on turn 2+ (setting exists)
         result = await graph.ainvoke(
-            {**seed, "messages": [{"role": "user", "content": req.user_text}]},
+            {"messages": [{"role": "user", "content": req.user_text}]},
             config={"configurable": {"thread_id": req.thread_id}}
         )
 
@@ -59,16 +54,19 @@ async def story_turn(req: StoryTurnRequest):
         else:
             story_text = ""
 
-        # Reconstruct full content from all messages
-        content = reconstruct_content(messages)
+        # Get story state
+        story_state = result.get("story_state", {})
+
+        # Full content is in story_so_far
+        content = story_state.get("story_so_far", story_text)
 
         return StoryTurnResponse(
             thread_id=req.thread_id,
             story_text=story_text,
             content=content,
-            turn=result.get("story_progress", {}).get("turn", 0),
-            phase=result.get("story_progress", {}).get("phase", "Introduction"),
-            world_state=result.get("world_state", {})
+            turn=result.get("turn", 1),
+            story_state=story_state,
+            tension=story_state.get("tension")
         )
     except Exception as e:
         print(f"V2 story turn error: {e}")
@@ -87,24 +85,30 @@ async def get_all_v2_stories():
         stories = []
 
         for checkpoint in checkpoints:
-            # Extract data from checkpoint
             thread_id = checkpoint.get("thread_id", "")
             channel_values = checkpoint.get("channel_values", {})
-            world_state = channel_values.get("world_state", {})
-            story_progress = channel_values.get("story_progress", {})
+            story_state = channel_values.get("story_state", {})
+            turn = channel_values.get("turn", 0)
             messages = channel_values.get("messages", [])
 
-            # Get theme and content using new world_state structure
-            theme = extract_theme_v2(world_state)
-            content = reconstruct_content(messages)
+            # Get theme from setting or first character
+            setting = story_state.get("setting", "")
+            chars = story_state.get("characters", [])
+            if chars and isinstance(chars[0], dict):
+                theme = f"{chars[0].get('name', 'Story')} - {setting}"
+            else:
+                theme = setting or "Untitled Story"
+
+            # Content preview
+            content = story_state.get("story_so_far", "")
             content_preview = content[:100] + "..." if len(content) > 100 else content
 
             stories.append(StoryListItem(
                 thread_id=thread_id,
                 theme=theme,
                 content_preview=content_preview,
-                turn=story_progress.get("turn", 0),
-                phase=story_progress.get("phase", "Introduction"),
+                turn=turn,
+                tension=story_state.get("tension"),
                 created_at=None
             ))
 
@@ -128,21 +132,25 @@ async def get_v2_story(thread_id: str):
             raise HTTPException(status_code=404, detail="Story not found")
 
         channel_values = checkpoint.get("channel_values", {})
-        world_state = channel_values.get("world_state", {})
-        story_progress = channel_values.get("story_progress", {})
+        story_state = channel_values.get("story_state", {})
+        turn = channel_values.get("turn", 0)
         messages = channel_values.get("messages", [])
 
-        # Use new world_state structure for theme
-        theme = extract_theme_v2(world_state)
-        content = reconstruct_content(messages)
+        # Build theme from character + setting (same logic as list endpoint)
+        setting = story_state.get("setting", "")
+        chars = story_state.get("characters", [])
+        if chars and isinstance(chars[0], dict):
+            theme = f"{chars[0].get('name', 'Story')} - {setting}"
+        else:
+            theme = setting or "Untitled Story"
 
         return {
             "thread_id": thread_id,
+            "turn": turn,
             "theme": theme,
-            "content": content,
-            "turn": story_progress.get("turn", 0),
-            "phase": story_progress.get("phase", "Introduction"),
-            "world_state": world_state,
+            "story_state": story_state,
+            "content": story_state.get("story_so_far", ""),
+            "tension": story_state.get("tension"),
             "messages": messages
         }
     except HTTPException:
